@@ -2,7 +2,9 @@ import os
 import copy
 import numpy as np
 from Tiles.tiles import *
-import tensorflow as tf
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 
 class Memory(object):
     def __init__(self, buffer_size, state_size):
@@ -16,10 +18,10 @@ class Memory(object):
         self.buffer.extend(experience)
 
     def sample(self, size):
-        return np.reshape(np.array(self.buffer[:size]), [size, 3])
+        return np.reshape(np.array(self.buffer[:size],dtype=object), [size, 3])
 
     def sample_random(self, size):
-        return np.reshape(np.array(random.sample(self.buffer, size)), [size, 3])
+        return np.reshape(np.array(random.sample(self.buffer, size),dtype=object), [size, 3])
 
 class DTAMERAgent:
     def __init__(self, STATE_SIZE, ACTION_SIZE, HIDDEN_LAYER_NB, HIDDEN_LAYER_SIZE, EPS_DECAY, LEARNING_RATE, REWARD_LENGTH, REWARD, TRANSITION_TIME, REPLAY_SIZE, BATCH_SIZE, EPS_START):
@@ -132,7 +134,7 @@ class DTAMERAgent:
         pseudo_count = pseudo_totalcount * state_prob
         reward = np.clip(self.eps_threshold * pow((pseudo_count + self.exploration_constant), -0.5),0,2)
 
-        self.delay_memory.add(np.reshape(np.array([state, action, reward]), [1, 3]))
+        self.delay_memory.add(np.reshape(np.array([state, action, reward], dtype=object), [1, 3]))
 
         tiles_idx = self.calc_tiles_idx(state[0])
         self.density_weights[tiles_idx] += 1.0
@@ -151,7 +153,7 @@ class DTAMERAgent:
         self.reward_memory.buffer = list(self.reward_memory.buffer)
 
     def remember_single_reward(self, tracker, state, action, reward):
-        temp = np.reshape(np.array([state, action, reward]), [1, 3])
+        temp = np.reshape(np.array([state, action, reward], dtype=object), [1, 3])
         self.replay_memory.add(temp)
         tracker.fill_trajectory(temp[0,0], temp[0,2])
 
@@ -190,10 +192,16 @@ class DTAMERAgent:
 
     def load_model(self, sess, label):
         filename = label.split(':')[1].split('.data')[0]
+        print(filename)
         self.saver.restore(sess, filename)
         print('Load successful!')
 
-    def save_model(self, sess, save_path, label, t_idx):
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        self.saver.save(sess, save_path + '/' + label + '.ckpt', t_idx)
+    def save_model(self, sess, save_path, t_idx):
+        print("in save model")
+        print(save_path)
+        # if not os.path.exists(save_path):
+        #     os.makedirs(save_path)
+        self.saver.save(sess, save_path, t_idx)
+
+    def get_map(self):
+       print(getTiles())
