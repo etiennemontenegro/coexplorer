@@ -41,9 +41,9 @@ TRAINING_PARAMS_1 = [
                         0.002,  #LR
                         10,     #REWARD_LEN
                         1,      #REWARD
-                        700,    #REPLAY_SIZE
+                        700,    #REPLAY_SIZE 700
                         32,     #BATCH_SIZE
-                        0.1     #EPS_START
+                        0.3     #EPS_START default : 0.1
                     ]
 
 
@@ -320,7 +320,7 @@ if __name__ == "__main__":
     debug("Load model or start session")
 
     osc_interface.client.send_message('/path', str(os.getcwd()) + '/datalogs/' + ' ' + TRAINING_LABEL) #could use log-path. Is it still usefull?
-    osc_interface.send_workflow_control(init=1)
+    #osc_interface.send_workflow_control(init=1)
 
     while osc_interface.paused and osc_interface.running:
         time.sleep(0.01)

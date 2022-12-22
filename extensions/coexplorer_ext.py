@@ -55,10 +55,10 @@ class coexplorer:
 		cmd_python_script = '{}/scripts/TheInteractiveAgent_V5.py'.format(project.folder)
 		python_exe = parent().par.Pythonexe.val
 		name = op.coexplorer.par.Name.eval()
-		state = str(op.coexplorer.par.State.val)
+		state = str(op.coexplorer.par.State.eval())
 		list_arg = ['--name', name , '--state', state]
 		command = [python_exe, cmd_python_script] + list_arg
-		print(command)
+		debug(command)
 		if self.process == None:
 			self.process = subprocess.Popen(command, shell = False)
 		elif self.process is not None:
