@@ -196,12 +196,12 @@ class DTAMERAgent:
         self.saver.restore(sess, filename)
         print('Load successful!')
 
-    def save_model(self, sess, save_path, t_idx):
-        print("in save model")
-        print(save_path)
-        # if not os.path.exists(save_path):
-        #     os.makedirs(save_path)
-        self.saver.save(sess, save_path, t_idx)
+    def save_model(self, sess, save_path,label, t_idx):
 
-    def get_map(self):
-       print(getTiles())
+        name = os.path.join(save_path,label)
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+            
+        self.saver.save(sess, name, t_idx)
+        print("Model saved")

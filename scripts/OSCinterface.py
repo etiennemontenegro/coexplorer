@@ -3,7 +3,7 @@ from pythonosc import dispatcher
 from pythonosc import osc_server
 import numpy as np
 import threading
-
+import os
 class OSCClass:
     def __init__(self, STATE_SIZE, ACTION_SIZE , TRANSITION_TIME, ip, port, TRAINING_LABEL):
 
@@ -158,11 +158,12 @@ class OSCClass:
             self.debug("Autonomous exploration on")
 
     def save_model(self, unused_addr, *args):
-        self.save_modelname = args[1]
-        self.save_path = args[1]
+        # self.debug("Save model OSC")
+        
+        self.save_modelname = args[0]
         self.save = True
-        print(args[1])
-        self.debug("OSC INTerFACe Save model")
+        self.debug("Save model OSC")
+
 
     def load_model(self, unused_addr, model_name):
         self.load_modelname = model_name

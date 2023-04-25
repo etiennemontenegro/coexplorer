@@ -1,7 +1,3 @@
-# /pause 1 pause the program 
-# /pause 0 unpause the program
-## ui pour trajectoire
-# ui pour zone
 
 
 #############################################################################################################
@@ -17,7 +13,6 @@ import pickle
 import random
 import numpy as np
 from argparse import ArgumentParser
-#import tensorflow as tf
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 
@@ -32,8 +27,8 @@ from OSCinterface import OSCClass
 # TRAINING_PARAMS_1 = [16, 1, 2, 100, 0, 0.001, 4, 1, 0, 4, 0.5]
 # TRAINING_PARAMS_1 = [1, 100, 2, 100, 2000, 0.002, 10, 1, 700, 32, 0.1]
 
-TRAINING_PARAMS_1 = [   
-                        10,     #STATES
+TRAINING_PARAMS_1 = [     
+                        10,     #STATES #can be changed with script arg
                         100,    #STEPS
                         2,      #HL_NB
                         100,    #HL_SIZE
@@ -48,7 +43,7 @@ TRAINING_PARAMS_1 = [
 
 
 #TRAINING_LABEL = 'TEST'
- #input('Enter NAME_ITERATION (e.g. ALEX_2):') #ask user to input name in cmd
+
 TRANSITION_TIME = .1
 MAX_TRANSITION_TIME = 1
 
@@ -80,19 +75,20 @@ def init_program(started_bool = False):
     tf.compat.v1.reset_default_graph()
     sess = tf.compat.v1.Session()
 
-
     agent = DTAMERAgent(STATE_SIZE, ACTION_SIZE, HIDDEN_LAYER_NB, HIDDEN_LAYER_SIZE, EPS_DECAY, LEARNING_RATE, REWARD_LENGTH, REWARD, TRANSITION_TIME, REPLAY_SIZE, BATCH_SIZE, EPS_START)
     env = Env(STATE_SIZE, STATE_STEPS, REWARD_LENGTH, REWARD)
     tracker = Tracker(STATE_SIZE, MAX_STATE_STEPS, TRAINING_LABEL)
 
-    log_path = r'./datalogs/' + TRAINING_LABEL
+    log_path = r'./models/' + TRAINING_LABEL
 
-    if not started_bool and os.path.isdir(log_path):
-        debug('Training label already exist. Deleting old folder')
-        shutil.rmtree(log_path)
+    # if not started_bool and os.path.isdir(log_path):
+    #     debug('Training label already exist. Deleting old folder')
+    #     shutil.rmtree(log_path)
 
 
     if not os.path.isdir(log_path):
+        debug('creating model directory')
+        debug(log_path)
         os.makedirs(log_path)
 
     sess.run(tf.global_variables_initializer())
@@ -289,25 +285,61 @@ def zone_feedback(agent, env, tracker, state, score): #throw a bug whe superlike
         osc_interface.send_state_to_slider(state, 'Superdislike')
 
 
+
+
+
+
+
+## SCRIPT ARGUMENT PARSING
+
 if __name__ == "__main__":
     parser = ArgumentParser(description='A simple argument input example')
     parser.add_argument("-n", "--name", help="model name", required=True)
     parser.add_argument("-s", "--state", help="number of dimension", required=True )
+
     
+    parser.add_argument( "--steps", default= 10 )
+    parser.add_argument("--hl_nb", default= 2 )
+    parser.add_argument("--hl_size", default= 100)
+    parser.add_argument("--eps_decay",default= 2000)
+    parser.add_argument("--learning_rate", default=0.002 )
+    parser.add_argument("--reward_length", default=10 )
+    parser.add_argument("--reward", default=1)
+    parser.add_argument("--replay_size",default= 700)
+    parser.add_argument("--batch_size", default=32 )
+    parser.add_argument("--eps_start", default= 0.3)
+
     args = parser.parse_args()
+    
+    ## TRAINING PARAMETER ATTRIBUTION
     TRAINING_LABEL = args.name
     STATE_SIZE = int(args.state)
+    ACTION_SIZE = 2 * STATE_SIZE #need to recalculate action size after state_size changed
 
+    STATE_STEPS = int(args.steps)
+    HIDDEN_LAYER_NB = int(args.hl_nb)
+    HIDDEN_LAYER_SIZE = int(args.hl_size)
+    EPS_DECAY = int(args.eps_decay)
+    LEARNING_RATE = float(args.learning_rate)
+    REWARD_LENGTH = int(args.reward_length)
+    REWARD = int(args.reward)
+    REPLAY_SIZE = int(args.replay_size)
+    BATCH_SIZE = int(args.batch_size)
+    EPS_START = float(args.eps_start)
+
+
+    ##OSC INTERFACE INITIALISATION
     osc_interface = OSCClass(STATE_SIZE, ACTION_SIZE, TRANSITION_TIME, "127.0.0.1", 5005, TRAINING_LABEL)
     osc_interface.send_workflow_control(init=1)
     debug("OSC interface initialized") 
     debug("Training label is : " + TRAINING_LABEL)
 
-    # Init classes
+
+    #INITIALIZE AGENT AND ENVIRONMENT
     sess, agent, env, tracker = init_program(started_bool = False)
     debug("Session, agent, environment and tracker initialized")
 
-    # Init state, action and variables
+    # RESET VARIABLE TO INITIAL STATE
     reward = 0
     t_idx = 0
     nb_iter = 0
@@ -316,12 +348,11 @@ if __name__ == "__main__":
     action, rand_bool = agent.act(sess, state)
     debug("State, action and variable initialized")
 
+    #INITIALISATION DONE
     # First loop, wait here until user starts interaction
     debug("Load model or start session")
 
-    osc_interface.client.send_message('/path', str(os.getcwd()) + '/datalogs/' + ' ' + TRAINING_LABEL) #could use log-path. Is it still usefull?
-    #osc_interface.send_workflow_control(init=1)
-
+    
     while osc_interface.paused and osc_interface.running:
         time.sleep(0.01)
         
@@ -339,6 +370,8 @@ if __name__ == "__main__":
         ##############      RL CYCLE         ###################
         ########################################################
         osc_interface.client.send_message("/timeIndex", t_idx)
+        print('action')
+        print(action)
         next_state = env.step(state, action)
         next_action, rand_bool = agent.act(sess, next_state, t_idx)
         agent.remember_transition(state, action)
@@ -500,7 +533,9 @@ if __name__ == "__main__":
 
                 #maybe save model
                 if osc_interface.save:
-                    agent.save_model(sess, osc_interface.save_path, t_idx)
+                    debug('Saving model')
+                    
+                    agent.save_model(sess, save_path,osc_interface.save_modelname, t_idx)
                     osc_interface.save = False
 
                 #maybe load model
@@ -559,6 +594,7 @@ if __name__ == "__main__":
 
         #maybe explore actiom
         if osc_interface.rnd_action:  # Control 5: Explore action
+            print('random_action')
             osc_interface.rnd_action = False
             osc_interface.send_agent_control(explore_action = 1)
             action = explore_action(agent, state, t_idx)
