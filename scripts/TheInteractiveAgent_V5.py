@@ -29,7 +29,7 @@ from OSCinterface import OSCClass
 
 TRAINING_PARAMS_1 = [     
                         10,     #STATES #can be changed with script arg
-                        100,    #STEPS
+                        100,    #STEPS # resolution of parameters
                         2,      #HL_NB
                         100,    #HL_SIZE
                         2000,   #EPS_DEC
