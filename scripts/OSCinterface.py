@@ -161,6 +161,7 @@ class OSCClass:
         # self.debug("Save model OSC")
         
         self.save_modelname = args[0]
+        print(args[0])
         self.save = True
         self.debug("Save model OSC")
 
@@ -221,6 +222,7 @@ class OSCClass:
     def sample_vststate(self, unused_addr, *args): ## save as preset?
         self.debug("sample vst state")
         VSTsample = np.array(args)
+        print("vstsample",VSTsample)
         self.VSTstate = VSTsample
         self.VSTsample_bool = True
 

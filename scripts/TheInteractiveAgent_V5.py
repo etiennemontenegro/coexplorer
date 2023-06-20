@@ -27,19 +27,19 @@ from OSCinterface import OSCClass
 # TRAINING_PARAMS_1 = [16, 1, 2, 100, 0, 0.001, 4, 1, 0, 4, 0.5]
 # TRAINING_PARAMS_1 = [1, 100, 2, 100, 2000, 0.002, 10, 1, 700, 32, 0.1]
 
-TRAINING_PARAMS_1 = [     
-                        10,     #STATES #can be changed with script arg
-                        100,    #STEPS # resolution of parameters
-                        2,      #HL_NB
-                        100,    #HL_SIZE
-                        2000,   #EPS_DEC
-                        0.002,  #LR
-                        10,     #REWARD_LEN
-                        1,      #REWARD
-                        700,    #REPLAY_SIZE 700
-                        32,     #BATCH_SIZE
-                        0.3     #EPS_START default : 0.1
-                    ]
+# TRAINING_PARAMS_1 = [     
+#                         10,     #STATES #can be changed with script arg
+#                         100,    #STEPS
+#                         2,      #HL_NB
+#                         100,    #HL_SIZE
+#                         2000,   #EPS_DEC
+#                         0.002,  #LR
+#                         10,     #REWARD_LEN
+#                         1,      #REWARD
+#                         700,    #REPLAY_SIZE 700
+#                         32,     #BATCH_SIZE
+#                         0.3     #EPS_START default : 0.1
+#                     ]
 
 
 #TRAINING_LABEL = 'TEST'
@@ -51,19 +51,19 @@ MAX_REWARD_LENGTH = 64
 MAX_STATE_STEPS = 100
 PRINT_FREQ = 250
 
-TRAINING = TRAINING_PARAMS_1
-STATE_SIZE = TRAINING[0]
-ACTION_SIZE = 2 * STATE_SIZE
-STATE_STEPS = TRAINING[1]
-HIDDEN_LAYER_NB = TRAINING[2]
-HIDDEN_LAYER_SIZE = TRAINING[3]
-EPS_DECAY = TRAINING[4]
-LEARNING_RATE = TRAINING[5]
-REWARD_LENGTH = TRAINING[6]
-REWARD = TRAINING[7]
-REPLAY_SIZE = TRAINING[8]
-BATCH_SIZE = TRAINING[9]
-EPS_START = TRAINING[10]
+# TRAINING = TRAINING_PARAMS_1
+# STATE_SIZE = TRAINING[0]
+# ACTION_SIZE = 2 * STATE_SIZE
+# STATE_STEPS = TRAINING[1]
+# HIDDEN_LAYER_NB = TRAINING[2]
+# HIDDEN_LAYER_SIZE = TRAINING[3]
+# EPS_DECAY = TRAINING[4]
+# LEARNING_RATE = TRAINING[5]
+# REWARD_LENGTH = TRAINING[6]
+# REWARD = TRAINING[7]
+# REPLAY_SIZE = TRAINING[8]
+# BATCH_SIZE = TRAINING[9]
+# EPS_START = TRAINING[10]
 
 def debug( message ):
     print(message)
@@ -284,12 +284,6 @@ def zone_feedback(agent, env, tracker, state, score): #throw a bug whe superlike
         tracker.fill_trajectory(start_state, 'Superdislike')
         osc_interface.send_state_to_slider(state, 'Superdislike')
 
-
-
-
-
-
-
 ## SCRIPT ARGUMENT PARSING
 
 if __name__ == "__main__":
@@ -314,7 +308,7 @@ if __name__ == "__main__":
     ## TRAINING PARAMETER ATTRIBUTION
     TRAINING_LABEL = args.name
     STATE_SIZE = int(args.state)
-    ACTION_SIZE = 2 * STATE_SIZE #need to recalculate action size after state_size changed
+    ACTION_SIZE = 2 * int(args.state) #need to recalculate action size after state_size changed
 
     STATE_STEPS = int(args.steps)
     HIDDEN_LAYER_NB = int(args.hl_nb)

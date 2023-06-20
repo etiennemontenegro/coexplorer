@@ -52,13 +52,16 @@ class coexplorer:
 	def Launch(self):
 		self.clearOutput()
 		# point to our script that we're going to execute
-		cmd_python_script = '{}/scripts/TheInteractiveAgent_V5.py'.format(project.folder)
+		cmd_python_script = parent().par.Script.val #'{}/scripts/TheInteractiveAgent_V5.py'.format(project.folder)
 		python_exe = parent().par.Pythonexe.val
 		name = op.coexplorer.par.Name.eval()
 		state = str(op.coexplorer.par.State.eval())
 		list_arg = ['--name', name , '--state', state]
 		command = [python_exe, cmd_python_script] + list_arg
+		
 		debug(command)
+		
+		
 		if self.process == None:
 			self.process = subprocess.Popen(command, shell = False)
 		elif self.process is not None:
@@ -73,6 +76,8 @@ class coexplorer:
 		self.ClearMonitor()
 		self.clearOutput()
 		self.ClearTables()
+		self.ownerComp.par.Positive = 0
+		self.ownerComp.par.Negative = 0
 		return
 
 	def DisableUI(self):
@@ -86,12 +91,12 @@ class coexplorer:
 	def Kill(self):
 		self.process.kill()
 		self.process = None
-		op.explorationui.par.Value0 = 0 
+		#op.explorationui.par.Value0 = 0 
 		return
 	
 	def Stop(self):
 		osc.sendOSC("/stop",[0])
-		op.explorationui.par.Value0 = 0 
+		#op.explorationui.par.Value0 = 0 
 		return
 		
 
@@ -107,9 +112,11 @@ class coexplorer:
 		if reward == True:
 			osc.sendOSC("/direction",[1])
 			self.storeDirection(1)
+			self.ownerComp.par.Positive.val +=1
 		elif reward == False:
 			osc.sendOSC("/direction",[-1])
 			self.storeDirection(-1)
+			self.ownerComp.par.Negative.val +=1
 		return
 		
 	def Zone(self , reward):
@@ -138,7 +145,7 @@ class coexplorer:
 	def Save(self):
 		#path = ui.chooseFile(load=False,fileTypes=['.ckpt'])
 		path = ui.chooseFile(load=False, fileTypes=[''])
-		osc.sendOSC("/save",["symbol",path])
+		osc.sendOSC("/save",[path])
 
 		self.saveToText(goodZone,path,"good_zones")
 		self.saveToText(badZone,path,"bad_zones")
@@ -202,27 +209,20 @@ class coexplorer:
 	
 	def SendState(self):
 		state = list()
-		for page in parent().customPages:
-			if page.name == "State":
-				for p in page:
-					state.append(p.val)
+		pars = self.ownerComp.op('out2')
+		
+		for p in pars:
+			state.append(p.val)
+			
+#		for page in parent().customPages:
+#			if page.name == "State":
+#				for p in page:
+#					state.append(p.val)
 					
 
 		osc.sendOSC("/sample_vst",state)
 		return
 
-	def Overridebcf(self):
-		state = list()
-		idx = 0
-		for page in parent().customPages:
-			if page.name == "State":
-				for p in page:
-					op.bcf.OverrideFader(idx,p.val)
-					idx = idx +1
-					
-
-		osc.sendOSC("/sample_vst",state)
-		return
 
 	def SetState(self,state):
 		i =0
