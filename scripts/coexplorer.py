@@ -364,8 +364,9 @@ if __name__ == "__main__":
         ##############      RL CYCLE         ###################
         ########################################################
         osc_interface.client.send_message("/timeIndex", t_idx)
-        print('action')
-        print(action)
+        
+        #print('action')
+        #print(action)
         next_state = env.step(state, action)
         next_action, rand_bool = agent.act(sess, next_state, t_idx)
         agent.remember_transition(state, action)

@@ -52,7 +52,7 @@ class coexplorer:
 	def Launch(self):
 		self.clearOutput()
 		# point to our script that we're going to execute
-		cmd_python_script = parent().par.Script.val #'{}/scripts/TheInteractiveAgent_V5.py'.format(project.folder)
+		cmd_python_script = parent().par.Script.val #'{}/scripts/coexplorer.py'.format(project.folder)
 		python_exe = parent().par.Pythonexe.val
 		name = op.coexplorer.par.Name.eval()
 		state = str(op.coexplorer.par.State.eval())
@@ -71,13 +71,14 @@ class coexplorer:
 		return
 	
 	def Reinit(self):
-		op.launchui.par.Value0 = 0	
-		op.explorationui.par.Value0 = 0 
+		#op.launchui.par.Value0 = 0	
+		#op.explorationui.par.Value0 = 0 
 		self.ClearMonitor()
 		self.clearOutput()
 		self.ClearTables()
 		self.ownerComp.par.Positive = 0
 		self.ownerComp.par.Negative = 0
+		self.ownerComp.par.Autoexplore = 0
 		return
 
 	def DisableUI(self):
