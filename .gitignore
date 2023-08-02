@@ -1,2 +1,4 @@
 Backup/*
 datalog/*
+src/*
+scripts/__pycache__/*
