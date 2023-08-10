@@ -36,6 +36,7 @@ class coexplorer:
 
 		self.process = None
 		
+		
 
 		# stored items (persistent across saves and re-initialization):
 		storedItems = [
@@ -50,6 +51,7 @@ class coexplorer:
 
 
 	def Launch(self):
+		
 		self.clearOutput()
 		# point to our script that we're going to execute
 		cmd_python_script = parent().par.Script.val #'{}/scripts/coexplorer.py'.format(project.folder)
@@ -67,7 +69,8 @@ class coexplorer:
 		elif self.process is not None:
 			self.process.kill()
 			self.process = subprocess.Popen(command, shell = False)
-		self.DisableUI()
+		print(self.process)
+		#self.DisableUI()
 		return
 	
 	def Reinit(self):
@@ -197,6 +200,7 @@ class coexplorer:
 	
 	def AutoExplore(self, io):
 		osc.sendOSC("/autoexplore",[int(not(io))])	
+		
 		self.SendState()
 		return
 	
@@ -210,18 +214,16 @@ class coexplorer:
 	
 	def SendState(self):
 		state = list()
-		pars = self.ownerComp.op('out2')
+		pars = self.ownerComp.op('out2').chans()
 		
-		for p in pars:
-			state.append(p.val)
-			
-#		for page in parent().customPages:
-#			if page.name == "State":
-#				for p in page:
-#					state.append(p.val)
-					
+		if pars is None:
+			print("no channnels")
 
-		osc.sendOSC("/sample_vst",state)
+		if pars is not None:
+			for p in pars:
+				state.append(p[0])
+
+			osc.sendOSC("/sample_vst",state)
 		return
 
 

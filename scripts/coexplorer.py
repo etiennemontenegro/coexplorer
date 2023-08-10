@@ -160,13 +160,13 @@ def explore_state(sess, agent, env, tracker, t, osc_interface):
     debug('time; ' + str(t) + '; Explore from new state! : ' + str(state))
     
     tracker.fill_trajectory(state,'Explore_state')
-    osc_interface.send_state_to_slider(state, 'Explore_state')
+    osc_interface.send_zone(state, 'Explore_state')
     action, rand_bool = agent.act(sess, state)
 
     # timeout_start = time.time()
     # reward_idx = 1
 
-    osc_interface.client.send_message('/params', state[0])
+    osc_interface.send_state(state[0])
 
     ##make function to toggle distribution of reward on runtime vvv
 
@@ -188,7 +188,7 @@ def explore_state(sess, agent, env, tracker, t, osc_interface):
     #             reward = osc_interface.reward
     #             osc_interface.client.send_message('/reward_in', reward)
     #
-    #         osc_interface.send_state_to_slider(state, reward)
+    #         osc_interface.send_zone(state, reward)
     #
     #         reward = 0
     #         osc_interface.reward = 0
@@ -278,11 +278,11 @@ def zone_feedback(agent, env, tracker, state, score): #throw a bug whe superlike
     if score == 1:
         debug('Good Zone for ' + str(start_state))
         tracker.fill_trajectory(start_state, 'Superlike')
-        osc_interface.send_state_to_slider(state, 'Superlike')
+        osc_interface.send_zone(state, 'Superlike')
     elif score == -1:
         debug('Bad Zone for ' + str(start_state))
         tracker.fill_trajectory(start_state, 'Superdislike')
-        osc_interface.send_state_to_slider(state, 'Superdislike')
+        osc_interface.send_zone(state, 'Superdislike')
 
 ## SCRIPT ARGUMENT PARSING
 
@@ -324,7 +324,7 @@ if __name__ == "__main__":
 
     ##OSC INTERFACE INITIALISATION
     osc_interface = OSCClass(STATE_SIZE, ACTION_SIZE, TRANSITION_TIME, "127.0.0.1", 5005, TRAINING_LABEL)
-    osc_interface.send_workflow_control(init=1)
+    
     debug("OSC interface initialized") 
     debug("Training label is : " + TRAINING_LABEL)
 
@@ -345,12 +345,14 @@ if __name__ == "__main__":
     #INITIALISATION DONE
     # First loop, wait here until user starts interaction
     debug("Load model or start session")
-
+    osc_interface.send_workflow_control(init=1)
     
     while osc_interface.paused and osc_interface.running:
         time.sleep(0.01)
         
+        
         if osc_interface.load:
+            debug("Loading model {}".format( osc_interface.load_modelname))
             agent.load_model(sess, osc_interface.load_modelname)
             osc_interface.load = False
     
@@ -384,7 +386,7 @@ if __name__ == "__main__":
 
         # Collect tracking data
         tracker.fill_trajectory(state, reward)
-        osc_interface.send_state_to_slider(state, reward)
+        osc_interface.send_zone(state, reward)
 
         # Prepare next cycle
         state = next_state
@@ -444,15 +446,18 @@ if __name__ == "__main__":
                 
                 #maybe next state
                 if osc_interface.next:
+                    print('here')
+                    osc_interface.debug("Next state")
                     osc_interface.next = False
                     if not osc_interface.idx == 1:
+                        print(osc_interface.idx)
                         osc_interface.idx -= 1
                         state = tracker.trajectory[-osc_interface.idx][1].T
                         action, _ = agent.act(sess, state, t_idx)
 
                         osc_interface.send_agent_control(next_s = 1)
                         osc_interface.send_state(state[0])
-               
+                
                 #maybe set state
                 if osc_interface.VSTsample_bool: ##set state to vst state
                     state = osc_interface.VSTstate
@@ -478,7 +483,7 @@ if __name__ == "__main__":
                     osc_interface.send_state(next_state[0])
                     osc_interface.send_workflow_control(rand=rand_bool)
                     osc_interface.send_agent_control(reward_in=reward)
-                    osc_interface.send_state_to_slider(state, reward)
+                    osc_interface.send_zone(state, reward)
                     debug('one state reward')
                     debug(str(reward) + ' for action ' + str(action) + ' and state ' + str(state))
 

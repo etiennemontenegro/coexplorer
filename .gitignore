@@ -2,3 +2,4 @@ Backup/*
 datalog/*
 src/*
 scripts/__pycache__/*
+bcf2000_ui.tox

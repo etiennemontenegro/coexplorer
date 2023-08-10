@@ -51,6 +51,7 @@ class OSCClass:
         # Workflow controls
         self.dispatch.map("/stop", self.stop_program)
         self.dispatch.map("/autoexplore", self.pause_training)  # autonomous mode
+        
         self.dispatch.map("/previous_state", self.previous_state) 
         self.dispatch.map("/next_state", self.next_state)
         self.dispatch.map("/sample_vst", self.sample_vststate) #rename preset
@@ -95,7 +96,7 @@ class OSCClass:
         self.client.send_message('/state', state)
 
     ##rename send zone 
-    def send_state_to_slider(self, state, label): # format osc message to use with jit.cellblock in max patch
+    def send_zone(self, state, label): # format osc message to use with jit.cellblock in max patch
         #removed jit.cellblock formatting and sending zone state
         state = str(state[0])[1:-1]
         state_plit = state.split(' ')
@@ -217,7 +218,7 @@ class OSCClass:
 
     def next_state(self, unused_addr, next_bool):
         self.next = True
-        self.debug("Next state")
+        #self.debug("Next state")
 
     def sample_vststate(self, unused_addr, *args): ## save as preset?
         self.debug("sample vst state")
