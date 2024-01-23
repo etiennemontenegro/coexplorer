@@ -206,7 +206,10 @@ class OSCClass:
         self.debug("random action")
 
     def rescale_reward_length(self, unused_addr, new_reward_length):
+
+        self.debug("changing speed. received value is {}".format(new_reward_length))
         self.increment_reward_length = new_reward_length * -2
+        self.debug("increment_reward_length {}".format( self.increment_reward_length))
         self.new_speed = True
         self.debug("rescale reward length")
 

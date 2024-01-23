@@ -44,10 +44,10 @@ from OSCinterface import OSCClass
 
 #TRAINING_LABEL = 'TEST'
 
-TRANSITION_TIME = .1
-MAX_TRANSITION_TIME = 1
+TRANSITION_TIME = 2 # modified for tréma 
+MAX_TRANSITION_TIME = 1 #not used
 
-MAX_REWARD_LENGTH = 64
+MAX_REWARD_LENGTH = 64 
 MAX_STATE_STEPS = 100
 PRINT_FREQ = 250
 
@@ -127,7 +127,7 @@ def rescale_transitions(agent, t):
     global TRANSITION_TIME
 
     #TRANSITION_TIME = max(0.015625,min(TRANSITION_TIME * trans_time,MAX_TRANSITION_TIME))
-    TRANSITION_TIME = 1.0/agent.reward_length
+    TRANSITION_TIME = 2/agent.reward_length
     agent.transition_time = TRANSITION_TIME
 
     temp_memory2 = copy.deepcopy(agent.delay_memory)
@@ -578,6 +578,8 @@ if __name__ == "__main__":
         # - Set new transition time
         if osc_interface.new_speed:
             osc_interface.new_speed = False
+
+            print("Changing speed",osc_interface.increment_reward_length )
 
             osc_interface.send_agent_control(time = (TRANSITION_TIME*1000))
 
