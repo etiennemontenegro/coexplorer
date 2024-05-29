@@ -44,7 +44,7 @@ from OSCinterface import OSCClass
 
 #TRAINING_LABEL = 'TEST'
 
-TRANSITION_TIME = 2 # modified for tréma 
+TRANSITION_TIME = 1 # modified for tréma 
 MAX_TRANSITION_TIME = 1 #not used
 
 MAX_REWARD_LENGTH = 64 
@@ -102,7 +102,7 @@ def init_program(started_bool = False):
 def resample_actions(env, t, resample_factor):
     print(resample_factor)
     state_steps = int(max(2,min(env.state_steps * resample_factor,MAX_STATE_STEPS)))
-    print(state)
+    
     env.state_steps = state_steps
     debug('time; ' + str(t) + '; Resample! Increment = ' + str(1.0 / state_steps))
 
@@ -338,7 +338,9 @@ if __name__ == "__main__":
     t_idx = 0
     nb_iter = 0
     rewards = np.zeros(agent.reward_length)
+    
     state = env.reset()
+    
     action, rand_bool = agent.act(sess, state)
     debug("State, action and variable initialized")
 
@@ -358,6 +360,7 @@ if __name__ == "__main__":
     
 
     osc_interface.send_workflow_control(paused = 0)
+    osc_interface.send_state(state[0])
     osc_interface.VSTsample_bool = False
 
     # Outer loop
@@ -446,11 +449,10 @@ if __name__ == "__main__":
                 
                 #maybe next state
                 if osc_interface.next:
-                    print('here')
                     osc_interface.debug("Next state")
                     osc_interface.next = False
                     if not osc_interface.idx == 1:
-                        print(osc_interface.idx)
+                    
                         osc_interface.idx -= 1
                         state = tracker.trajectory[-osc_interface.idx][1].T
                         action, _ = agent.act(sess, state, t_idx)
@@ -460,7 +462,9 @@ if __name__ == "__main__":
                 
                 #maybe set state
                 if osc_interface.VSTsample_bool: ##set state to vst state
+                    
                     state = osc_interface.VSTstate
+                    
                     state = np.reshape(state,[1,agent.state_size])
                     osc_interface.send_state(state[0])
                     action, _ = agent.act(sess, state, t_idx)
